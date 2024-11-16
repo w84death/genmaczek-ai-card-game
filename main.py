@@ -14,12 +14,14 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.setWindowTitle("genMaczek - AI Card Battle Game")
         # Set fixed window size and disable resizing
-        self.setFixedSize(800, 600)
+        # self.setFixedSize(800, 600)
+        self.setMaximumWidth(1024)
+        self.setMaximumHeight(768)
         self.setWindowIcon(QIcon('icon.png'))  # Add your icon file here
 
         # Initialize players and game
         self.player = Player("You")
-        self.ai_player = AIPlayer("AI Opponent", "http://localhost:11434")  # Ollama server
+        self.ai_player = AIPlayer("AI Opponent", "http://192.168.1.145:11434")  # Ollama server
         self.deck = self.create_deck()
         self.game = Game(self.player, self.ai_player, self.deck)
 

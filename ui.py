@@ -601,6 +601,7 @@ class GameUI:
             btn.setVisible(False)
 
     def show_cards(self, visible=True):
+        self.status_label.setText("Your turn!")
         for btn in self.card_buttons:
             btn.setVisible(visible)
         self.cards_container.setVisible(visible)  # Show/hide entire container

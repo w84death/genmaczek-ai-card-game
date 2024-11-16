@@ -23,13 +23,10 @@ class AIPlayer(Player):
 
             # Add random seed for each attempt
             payload = {
-                "model": "llama3.2:1b",
+                "model": "llama3.2",
                 "prompt": message,
                 "format": "json",
                 "stream": False,
-                "options": {
-                    "seed": random.randint(1, 999999)  # Random seed for each attempt
-                }
             }
             response = requests.post(
                 f"{self.server_url}/api/generate",

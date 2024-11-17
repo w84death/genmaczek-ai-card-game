@@ -1,12 +1,16 @@
 import random
 from PyQt5.QtWidgets import (QVBoxLayout, QLabel, QPushButton, QWidget, 
                            QHBoxLayout, QGroupBox, QFrame, QProgressBar, QStackedLayout, QTextEdit)
-from PyQt5.QtGui import QPalette, QBrush, QPixmap, QPainter, QColor, QPainterPath, QTextOption
+from PyQt5.QtGui import QPalette, QBrush, QPixmap, QPainter, QColor, QPainterPath, QTextOption, QFontDatabase
 from PyQt5.QtCore import Qt, QSize, QRectF, QTimer
 from PyQt5.QtMultimedia import QSound
 
 class GameUI:
     def __init__(self, main_window, player, ai_player, narrative_ai):
+        # Load custom font
+        QFontDatabase.addApplicationFont("fonts/Teko-Regular.ttf")
+        self.font_family = "Teko"
+
         self.main_window = main_window
         self.player = player
         self.ai_player = ai_player
@@ -19,14 +23,15 @@ class GameUI:
         # Replace QLabel with QTextEdit for narrative
         self.narrative_text = QTextEdit()
         self.narrative_text.setReadOnly(True)
-        self.narrative_text.setStyleSheet("""
-            QTextEdit {
+        self.narrative_text.setStyleSheet(f"""
+            QTextEdit {{
                 color: white;
                 font-size: 16px;
                 background-color: rgba(0, 0, 0, 150);
                 padding: 10px;
                 border-radius: 10px;
-            }
+                font-family: {self.font_family};
+            }}
         """)
         self.narrative_text.setWordWrapMode(QTextOption.WordWrap)
 
@@ -74,25 +79,27 @@ class GameUI:
         
         # Title
         title = QLabel("genMaczek")
-        title.setStyleSheet("""
-            QLabel {
+        title.setStyleSheet(f"""
+            QLabel {{
                 color: white;
                 font-size: 48px;
                 font-weight: bold;
                 padding: 20px;
-            }
+                font-family: {self.font_family};
+            }}
         """)
         title.setAlignment(Qt.AlignCenter)
         layout.addWidget(title)
 
         # Story introduction
         story_label = QLabel("Welcome, General! Your strategic prowess will be tested in this epic battle. Lead your forces to victory and outsmart your opponent!")
-        story_label.setStyleSheet("""
-            QLabel {
+        story_label.setStyleSheet(f"""
+            QLabel {{
                 color: white;
                 font-size: 18px;
                 padding: 10px;
-            }
+                font-family: {self.font_family};
+            }}
         """)
         story_label.setAlignment(Qt.AlignCenter)
         story_label.setWordWrap(True)
@@ -100,8 +107,8 @@ class GameUI:
 
         # Start button
         self.start_btn = QPushButton("Start Game")
-        self.start_btn.setStyleSheet("""
-            QPushButton {
+        self.start_btn.setStyleSheet(f"""
+            QPushButton {{
                 background-color: rgba(0, 200, 0, 150);
                 color: white;
                 border: 2px solid white;
@@ -109,10 +116,11 @@ class GameUI:
                 padding: 15px;
                 font-size: 24px;
                 font-weight: bold;
-            }
-            QPushButton:hover {
+                font-family: {self.font_family};
+            }}
+            QPushButton:hover {{
                 background-color: rgba(0, 255, 0, 200);
-            }
+            }}
         """)
         self.start_btn.setFixedWidth(200)
         self.start_btn.clicked.connect(lambda: self.show_layout('game'))
@@ -126,20 +134,21 @@ class GameUI:
         layout = QVBoxLayout()
         
         self.result_label = QLabel()
-        self.result_label.setStyleSheet("""
-            QLabel {
+        self.result_label.setStyleSheet(f"""
+            QLabel {{
                 color: white;
                 font-size: 36px;
                 font-weight: bold;
                 padding: 20px;
-            }
+                font-family: {self.font_family};
+            }}
         """)
         self.result_label.setAlignment(Qt.AlignCenter)
         layout.addWidget(self.result_label)
         
         quit_btn = QPushButton("Quit")
-        quit_btn.setStyleSheet("""
-            QPushButton {
+        quit_btn.setStyleSheet(f"""
+            QPushButton {{
                 background-color: rgba(200, 0, 0, 150);
                 color: white;
                 border: 2px solid white;
@@ -147,10 +156,11 @@ class GameUI:
                 padding: 15px;
                 font-size: 24px;
                 font-weight: bold;
-            }
-            QPushButton:hover {
+                font-family: {self.font_family};
+            }}
+            QPushButton:hover {{
                 background-color: rgba(255, 0, 0, 200);
-            }
+            }}
         """)
         quit_btn.setFixedWidth(200)
         quit_btn.clicked.connect(self.main_window.close)
@@ -163,7 +173,7 @@ class GameUI:
         if layout_name == 'intro':
             self.stacked_layout.setCurrentIndex(0)
         elif layout_name == 'game':
-            QSound.play("sfx/game_start.wav")
+            QSound.play("sfx/click.wav")
             self.stacked_layout.setCurrentIndex(1)
         elif layout_name == 'game_over':
             self.stacked_layout.setCurrentIndex(2)
@@ -205,15 +215,16 @@ class GameUI:
         
         # Player stats group (left side)
         player_group = QGroupBox("● PLAYER")
-        player_group.setStyleSheet("""
-            QGroupBox {
+        player_group.setStyleSheet(f"""
+            QGroupBox {{
                 background-color: rgba(0, 100, 200, 150);
                 border-radius: 10px;
                 padding: 20px 10px 10px 10px;
                 color: white;
                 font-size: 16px;
                 font-weight: bold;
-            }
+                font-family: {self.font_family};
+            }}
         """)
         player_layout = QVBoxLayout()
 
@@ -227,14 +238,16 @@ class GameUI:
         stats_layout = QVBoxLayout()
 
         # Define styles for stats labels with consistent width
-        stats_label_style = """
-            QLabel {
+        stats_label_style = f"""
+            QLabel {{
                 color: white;
                 font-weight: bold;
                 font-size: 14px;
                 background-color: rgba(0, 0, 0, 100);
                 border-radius: 5px;
-                padding: 5px;            }
+                padding: 5px;
+                font-family: {self.font_family};
+            }}
         """
 
         # Define player defense label
@@ -255,8 +268,8 @@ class GameUI:
 
         # Define last played card label
         self.player_last_card = QLabel("Last played: None")
-        last_played_style = """
-            QLabel {
+        last_played_style = f"""
+            QLabel {{
                 color: white;
                 font-weight: bold;
                 font-size: 12px;
@@ -264,7 +277,8 @@ class GameUI:
                 border-radius: 3px;
                 padding: 3px;
                 margin: 0px;
-            }
+                font-family: {self.font_family};
+            }}
         """
         self.player_last_card.setStyleSheet(last_played_style)
         player_layout.addWidget(self.player_last_card)
@@ -291,57 +305,61 @@ class GameUI:
 
         # Center status section
         center_group = QGroupBox("DECK STATUS")  # Added container with title
-        center_group.setStyleSheet("""
-            QGroupBox {
+        center_group.setStyleSheet(f"""
+            QGroupBox {{
                 background-color: rgba(50, 50, 50, 150);
                 border-radius: 10px;
                 padding: 10px;
                 color: white;
                 font-size: 16px;
                 font-weight: bold;
-            }
+                font-family: {self.font_family};
+            }}
         """)
         center_status = QVBoxLayout()
         
         # Deck label as header
         deck_header = QLabel("CARDS REMAINING")
-        deck_header.setStyleSheet("""
-            QLabel {
+        deck_header.setStyleSheet(f"""
+            QLabel {{
                 color: white;
                 padding: 5px;
                 font-weight: bold;
                 font-size: 14px;
-            }
+                font-family: {self.font_family};
+            }}
         """)
         deck_header.setAlignment(Qt.AlignCenter)
         center_status.addWidget(deck_header)
         
         # Cards remaining count
         self.cards_remaining_label = QLabel(f"{len(self.main_window.deck)}")
-        self.cards_remaining_label.setStyleSheet("""
-            QLabel {
+        self.cards_remaining_label.setStyleSheet(f"""
+            QLabel {{
                 color: white;
                 background-color: rgba(0, 0, 0, 100);
                 padding: 15px;
                 border-radius: 5px;
                 font-weight: bold;
                 font-size: 32px;
-            }
+                font-family: {self.font_family};
+            }}
         """)
         self.cards_remaining_label.setAlignment(Qt.AlignCenter)
         center_status.addWidget(self.cards_remaining_label)
         
         # Status label with consistent styling
         self.status_label = QLabel("Your turn")
-        self.status_label.setStyleSheet("""
-            QLabel {
+        self.status_label.setStyleSheet(f"""
+            QLabel {{
                 color: white;
                 background-color: rgba(0, 0, 0, 100);
                 padding: 8px;
                 border-radius: 5px;
                 font-weight: bold;
                 font-size: 14px;
-            }
+                font-family: {self.font_family};
+            }}
         """)
         self.status_label.setAlignment(Qt.AlignCenter)
         center_status.addWidget(self.status_label)
@@ -352,15 +370,16 @@ class GameUI:
 
         # AI stats group (right side)
         ai_group = QGroupBox("▶ AI OPPONENT")
-        ai_group.setStyleSheet("""
-            QGroupBox {
+        ai_group.setStyleSheet(f"""
+            QGroupBox {{
                 background-color: rgba(200, 50, 50, 150);
                 border-radius: 10px;
                 padding: 20px 10px 10px 10px;
                 color: white;
                 font-size: 16px;
                 font-weight: bold;
-            }
+                font-family: {self.font_family};
+            }}
         """)
         ai_layout = QVBoxLayout()
 
@@ -434,15 +453,16 @@ class GameUI:
         
         # Add waiting label
         self.waiting_label = QLabel("Waiting for AI move...")
-        self.waiting_label.setStyleSheet("""
-            QLabel {
+        self.waiting_label.setStyleSheet(f"""
+            QLabel {{
                 font-size: 24px;
                 color: white;
                 background-color: rgba(0, 0, 0, 180);
                 padding: 20px;
                 border-radius: 15px;
                 font-weight: bold;
-            }
+                font-family: {self.font_family};
+            }}
         """)
         self.waiting_label.setAlignment(Qt.AlignCenter)
         self.waiting_label.hide()
@@ -455,14 +475,15 @@ class GameUI:
 
         # Add footer (will stay at bottom)
         footer = QLabel("Produced by Krzysztof Krystian Jankowski, © 2024. Powered by IBM Granite 3.0")
-        footer.setStyleSheet("""
-            QLabel {
+        footer.setStyleSheet(f"""
+            QLabel {{
                 color: white;
                 background-color: rgba(0, 0, 0, 150);
                 padding: 10px;
                 border-radius: 5px;
                 font-size: 12px;
-            }
+                font-family: {self.font_family};
+            }}
         """)
         footer.setAlignment(Qt.AlignCenter)
         self.game_layout.addWidget(footer)
@@ -518,8 +539,8 @@ class GameUI:
         """Update the deck count display"""
         self.cards_remaining_label.setText(str(count))
         # Add some visual feedback
-        self.cards_remaining_label.setStyleSheet("""
-            QLabel {
+        self.cards_remaining_label.setStyleSheet(f"""
+            QLabel {{
                 color: white;
                 background-color: rgba(0, 0, 0, 100);
                 padding: 15px;
@@ -527,18 +548,20 @@ class GameUI:
                 font-weight: bold;
                 font-size: 32px;
                 border: 2px solid rgba(255, 255, 255, 150);
-            }
+                font-family: {self.font_family};
+            }}
         """)
         # Reset style after brief delay
-        QTimer.singleShot(200, lambda: self.cards_remaining_label.setStyleSheet("""
-            QLabel {
+        QTimer.singleShot(200, lambda: self.cards_remaining_label.setStyleSheet(f"""
+            QLabel {{
                 color: white;
                 background-color: rgba(0, 0, 0, 100);
                 padding: 15px;
                 border-radius: 5px;
                 font-weight: bold;
                 font-size: 32px;
-            }
+                font-family: {self.font_family};
+            }}
         """))
 
     def update_hand(self):
@@ -598,14 +621,15 @@ class GameUI:
 
         # Cost icon label
         cost_label = QLabel(f"⬣ {card.cost}")
-        cost_label.setStyleSheet("""
-            QLabel {
+        cost_label.setStyleSheet(f"""
+            QLabel {{
                 font-size: 16px;
                 color: white;
                 background-color: black;
                 padding: 4px;
                 border-radius: 3px;
-            }
+                font-family: {self.font_family};
+            }}
         """)
         cost_label.setAlignment(Qt.AlignRight | Qt.AlignTop)
         cost_label.setFixedSize(50, 30)
@@ -624,27 +648,29 @@ class GameUI:
         # Name label
         name_label = QLabel(card.name)
         name_label.setAlignment(Qt.AlignCenter)
-        name_label.setStyleSheet("""
-            QLabel {
+        name_label.setStyleSheet(f"""
+            QLabel {{
                 font-weight: bold;
                 font-size: 12px;
                 color: white;
                 background-color: rgba(0, 0, 0, 150);
                 padding: 2px;
-            }
+                font-family: {self.font_family};
+            }}
         """)
 
         # Description label
         description_label = QLabel(card.description)
         description_label.setAlignment(Qt.AlignCenter)
         description_label.setWordWrap(True)
-        description_label.setStyleSheet("""
-            QLabel {
+        description_label.setStyleSheet(f"""
+            QLabel {{
                 font-size: 10px;
                 color: white;
                 background-color: rgba(0, 0, 0, 150);
                 padding: 4px;
-            }
+                font-family: {self.font_family};
+            }}
         """)
         description_label.setFixedHeight(40)
 

@@ -91,9 +91,7 @@ class MainWindow(QMainWindow):
         self.ui.show_cards(True)
 
     def play_card(self, card):
-        # Update deck count when a card is played
-        self.ui.update_deck_count(len(self.deck))
-        # Convert synchronous call to asynchronous
+        QSound.play("sfx/click.wav")
         asyncio.create_task(self._play_card_async(card))
 
     async def _play_card_async(self, card):
@@ -116,12 +114,10 @@ class MainWindow(QMainWindow):
 
         # Regular turn handling
         self.ui.show_cards(False)
-        self.ui.update_deck_count(len(self.deck))  # Update count when showing/hiding cards
 
         # Handle skip card
         if card.effect == "skip":
             self.ui.update_last_played(player_card=card)
-            self.ui.update_deck_count(len(self.deck))
             await self.ai_turn()
             self.end_turn()
             return
@@ -135,8 +131,10 @@ class MainWindow(QMainWindow):
         # Player plays a card
         self.player.play_card(card, self.ai_player)
         self.ui.update_last_played(player_card=card)
-        self.ui.update_deck_count(len(self.deck))  # Add this line
         self.update_stats()
+
+        # Update deck count after player plays a card
+        self.ui.update_deck_count(len(self.deck))
 
         # Generate narrative for player's action with bullet
         player_action = f"● Player used {card.name} against AI."  # Add bullet
@@ -200,9 +198,11 @@ class MainWindow(QMainWindow):
             # AI plays a card
             self.ai_player.play_card(ai_card, self.player)
             self.ui.update_last_played(ai_card=ai_card)
-            self.ui.update_deck_count(len(self.deck))  # Add this line
             self.update_stats()
             self.alert_window()  # Alert the window when AI responds
+
+            # Update deck count after AI plays a card
+            self.ui.update_deck_count(len(self.deck))
 
             # Generate narrative for AI's action with arrow
             ai_action = f"▶ AI used {ai_card.name} against Player."  # Add arrow

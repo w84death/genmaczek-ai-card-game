@@ -100,7 +100,7 @@ class AIPlayer(Player):
         return prompt
 
     async def generate_narrative(self, action):
-        prompt = f"Provide a narrative commentary for the following action:\n{action}\n. Respond in JSON with narrative_commentary."
+        prompt = f"Provide a narrative commentary for the following action:\n{action}\n. Respond in JSON with narrative_commentary. Keep response short and concise."
         payload = {
             "model": "granite3-dense",
             "prompt": prompt,
@@ -117,13 +117,15 @@ class AIPlayer(Player):
                     try:
                         narrative_response = json.loads(content)
                         commentary = narrative_response.get('narrative_commentary', '')
-                        return commentary.strip()
+                        # Add bullet/arrow based on who is acting
+                        prefix = "● " if "Player used" in action else "▶ "
+                        return f"{prefix}{commentary.strip()}"
                     except json.JSONDecodeError:
-                        return "The battle continues..."
+                        return "▶ The battle continues..."
         except Exception:
-            return "The battle continues..."
+            return "▶ The battle continues..."
         
-        return "The battle continues..."
+        return "▶ The battle continues..."
 
     async def generate_introduction(self):
         prompt = "Provide a motivational, welcoming message for the player general at the start of the game."

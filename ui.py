@@ -2,7 +2,7 @@ import random
 from PyQt5.QtWidgets import (QVBoxLayout, QLabel, QPushButton, QWidget, 
                            QHBoxLayout, QGroupBox, QFrame, QProgressBar, QStackedLayout, QTextEdit)
 from PyQt5.QtGui import QPalette, QBrush, QPixmap, QPainter, QColor, QPainterPath, QTextOption
-from PyQt5.QtCore import Qt, QSize, QRectF
+from PyQt5.QtCore import Qt, QSize, QRectF, QTimer
 from PyQt5.QtMultimedia import QSound
 
 class GameUI:
@@ -204,7 +204,7 @@ class GameUI:
         top_bar = QHBoxLayout()
         
         # Player stats group (left side)
-        player_group = QGroupBox("PLAYER")
+        player_group = QGroupBox("● PLAYER")
         player_group.setStyleSheet("""
             QGroupBox {
                 background-color: rgba(0, 100, 200, 150);
@@ -351,7 +351,7 @@ class GameUI:
         top_bar.addWidget(center_group)       # Add group to top bar
 
         # AI stats group (right side)
-        ai_group = QGroupBox("AI OPPONENT")
+        ai_group = QGroupBox("▶ AI OPPONENT")
         ai_group.setStyleSheet("""
             QGroupBox {
                 background-color: rgba(200, 50, 50, 150);
@@ -517,6 +517,29 @@ class GameUI:
     def update_deck_count(self, count):
         """Update the deck count display"""
         self.cards_remaining_label.setText(str(count))
+        # Add some visual feedback
+        self.cards_remaining_label.setStyleSheet("""
+            QLabel {
+                color: white;
+                background-color: rgba(0, 0, 0, 100);
+                padding: 15px;
+                border-radius: 5px;
+                font-weight: bold;
+                font-size: 32px;
+                border: 2px solid rgba(255, 255, 255, 150);
+            }
+        """)
+        # Reset style after brief delay
+        QTimer.singleShot(200, lambda: self.cards_remaining_label.setStyleSheet("""
+            QLabel {
+                color: white;
+                background-color: rgba(0, 0, 0, 100);
+                padding: 15px;
+                border-radius: 5px;
+                font-weight: bold;
+                font-size: 32px;
+            }
+        """))
 
     def update_hand(self):
         # Clear existing buttons and layout

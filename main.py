@@ -91,6 +91,8 @@ class MainWindow(QMainWindow):
         self.ui.show_cards(True)
 
     def play_card(self, card):
+        # Update deck count when a card is played
+        self.ui.update_deck_count(len(self.deck))
         # Convert synchronous call to asynchronous
         asyncio.create_task(self._play_card_async(card))
 
@@ -114,10 +116,12 @@ class MainWindow(QMainWindow):
 
         # Regular turn handling
         self.ui.show_cards(False)
+        self.ui.update_deck_count(len(self.deck))  # Update count when showing/hiding cards
 
         # Handle skip card
         if card.effect == "skip":
             self.ui.update_last_played(player_card=card)
+            self.ui.update_deck_count(len(self.deck))
             await self.ai_turn()
             self.end_turn()
             return
@@ -134,8 +138,8 @@ class MainWindow(QMainWindow):
         self.ui.update_deck_count(len(self.deck))  # Add this line
         self.update_stats()
 
-        # Generate narrative for player's action
-        player_action = f"Player used {card.name} against AI."
+        # Generate narrative for player's action with bullet
+        player_action = f"● Player used {card.name} against AI."  # Add bullet
         narrative = await self.narrative_ai.generate_narrative(player_action)
         self.ui.update_narrative(narrative)
 
@@ -200,8 +204,8 @@ class MainWindow(QMainWindow):
             self.update_stats()
             self.alert_window()  # Alert the window when AI responds
 
-            # Generate narrative for AI's action
-            ai_action = f"AI used {ai_card.name} against Player."
+            # Generate narrative for AI's action with arrow
+            ai_action = f"▶ AI used {ai_card.name} against Player."  # Add arrow
             narrative = await self.narrative_ai.generate_narrative(ai_action)
             self.ui.update_narrative(narrative)
         else:
@@ -226,6 +230,8 @@ class MainWindow(QMainWindow):
         self.ai_player.end_turn(self.deck)
         # Shuffle the deck after returning cards
         random.shuffle(self.deck)
+        # Update deck count after returning cards
+        self.ui.update_deck_count(len(self.deck))
         # Start new turn
         self.start_new_turn()
 

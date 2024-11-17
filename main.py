@@ -1,8 +1,10 @@
 # main.py
 import sys
+import random
 from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QLabel, QVBoxLayout, QWidget, QMessageBox
 from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import Qt
+from PyQt5.QtMultimedia import QSound  # Add this import
 from card import Card
 from player import Player
 from ai_player import AIPlayer
@@ -82,6 +84,9 @@ class MainWindow(QMainWindow):
         self.ui.show_cards(True)
 
     def play_card(self, card):
+        # Play click sound when player selects a card
+        QSound.play("sfx/click.wav")
+
         # Check if player is stunned at the start of their turn
         if self.player.skip_next_turn:
             self.player.skip_next_turn = False  # Reset stun
@@ -192,6 +197,7 @@ class MainWindow(QMainWindow):
 
         # Next turn
         self.update_hand()
+        QSound.play("sfx/ai_voice.wav")  # Play sound when AI ends its turn
 
     def end_turn(self):
         # Return unused cards to the deck

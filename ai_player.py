@@ -23,7 +23,7 @@ class AIPlayer(Player):
 
             # Add random seed for each attempt
             payload = {
-                "model": "llama3.2",
+                "model": "granite3-dense",
                 "prompt": message,
                 "format": "json",
                 "stream": False,
@@ -61,6 +61,8 @@ class AIPlayer(Player):
                     last_error = "Failed to parse AI response as JSON"
 
             retries += 1
+            if (not last_error):
+                last_error = "Respond in JSON format {{\"card_name\": \"[Card Name]\"}}."
             print(f"Retrying AI decision ({retries}/{max_retries}). Reason: {last_error}")
         
         print("AI failed to make a valid decision after all retries, skipping turn")
@@ -85,10 +87,10 @@ class AIPlayer(Player):
         
         if last_error:
             prompt += f"Previous attempt failed because: {last_error}. "
-            prompt += f"Choose card from: "
+            prompt += f"Cards in hand: "
             for card in game_state['ai_hand']:
                 prompt += f"\"{card['name']}\","
-        prompt += "Your turn, respond in JSON."
+        prompt += "Choose a valid card, Respond in JSON format {{\"card_name\": \"[Card Name]\"}}."
 
         # print(prompt)
         return prompt

@@ -419,7 +419,7 @@ class GameUI:
         self.game_layout.addWidget(game_area, stretch=1)
         
         # Add footer (will stay at bottom)
-        footer = QLabel("Produced by Krzysztof Krystian Jankowski, © 2024. Powered by Llama3.2 1B")
+        footer = QLabel("Produced by Krzysztof Krystian Jankowski, © 2024. Powered by IBM Granite 3.0")
         footer.setStyleSheet("""
             QLabel {
                 color: white;
@@ -499,6 +499,9 @@ class GameUI:
                     background-color: rgba(0, 0, 0, 200);
                     border-radius: 6px;
                     padding: 0;
+                }
+                QWidget:hover {
+                    background-color: rgba(0, 0, 240, 200);
                 }
             """)
 
@@ -604,7 +607,7 @@ class GameUI:
         self.status_label.setText("Your turn!")
         for btn in self.card_buttons:
             btn.setVisible(visible)
-        self.cards_container.setVisible(visible)  # Show/hide entire container
+        self.cards_container.setVisible(visible)
         self.waiting_label.setVisible(not visible)
 
     def update_last_played(self, player_card=None, ai_card=None):

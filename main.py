@@ -1,8 +1,8 @@
 # main.py
 import sys
-import random  # Add this import
 from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QLabel, QVBoxLayout, QWidget, QMessageBox
-from PyQt5.QtGui import QIcon  # Add this import
+from PyQt5.QtGui import QIcon
+from PyQt5.QtCore import Qt
 from card import Card
 from player import Player
 from ai_player import AIPlayer
@@ -21,7 +21,7 @@ class MainWindow(QMainWindow):
 
         # Initialize players and game
         self.player = Player("You")
-        self.ai_player = AIPlayer("AI Opponent", "http://192.168.1.145:11434")  # Ollama server
+        self.ai_player = AIPlayer("AI Opponent", "http://localhost:11434")  # Ollama server
         self.deck = self.create_deck()
         self.game = Game(self.player, self.ai_player, self.deck)
 
@@ -55,16 +55,16 @@ class MainWindow(QMainWindow):
             Card("Laser Attack", attack=15, cost=2, description="Fires a piercing laser at the enemy."),
             Card("Shield Upgrade", defense=10, cost=2, description="Deploys a shield to absorb damage."),
             Card("Rocket Attack", attack=25, cost=5, description="Launches a powerful rocket at the opponent that can be blocked by shields."),
-            Card("Repair", effect="heal", cost=4, description="Repairs damage to restore health."),
-            Card("Full Repair", effect="heal_full", cost=10, description="Fully restores your health."),
+            Card("Repair", effect="heal", cost=4, description="Repairs damage to restore 10 health."),
+            Card("Full Repair", effect="heal_full", cost=10, description="Fully restores 40 health."),
             Card("Stun", effect="skip_turn", cost=3, description="Stuns the enemy, causing them to skip a turn."),
             Card("Resource Generator", effect="add_resources", cost=2, description="Generates +5⬣ resources."),
-            Card("Sabotage Attack", attack=2, cost=2, description="Minor attack that bypasses enemy shields.", piercing=True),
-            Card("Intel Gathering", attack=1, cost=1, description="Gathers info while slightly damaging the enemy through shields.", piercing=True),
+            Card("Sabotage Attack", attack=4, cost=2, description="Minor attack that bypasses enemy shields.", piercing=True),
+            Card("Intel Gathering", attack=2, cost=1, description="Gathers info while slightly damaging the enemy through shields.", piercing=True),
             # ...add more unique cards as needed...
         ]
         # Increase the deck size more significantly
-        deck = base_cards * 12  # Increased from 8 to 12
+        deck = base_cards * 8
         random.shuffle(deck)
         return deck
 
@@ -100,16 +100,6 @@ class MainWindow(QMainWindow):
 
         # Regular turn handling
         self.ui.show_cards(False)
-
-        # Check if player is stunned
-        if self.player.skip_next_turn:
-            self.player.skip_next_turn = False  # Reset skip flag
-            self.ui.status_label.setText("Turn skipped due to stun!")
-            QApplication.processEvents()  # Update UI
-            # AI's turn
-            self.ai_turn()
-            self.end_turn()
-            return
 
         # Handle skip card
         if card.effect == "skip":
@@ -187,6 +177,7 @@ class MainWindow(QMainWindow):
             self.ai_player.play_card(ai_card, self.player)
             self.ui.update_last_played(ai_card=ai_card)
             self.update_stats()
+            self.alert_window()  # Alert the window when AI responds
         else:
             # Handle case where AI didn't return a valid move
             print("AI did not play a card.")
@@ -222,6 +213,11 @@ class MainWindow(QMainWindow):
 
     def update_stats(self):
         self.ui.update_stats()
+
+    def alert_window(self):
+        self.setWindowState(self.windowState() & ~Qt.WindowMinimized | Qt.WindowActive)
+        self.raise_()
+        self.activateWindow()
 
 app = QApplication(sys.argv)
 window = MainWindow()

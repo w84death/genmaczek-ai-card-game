@@ -25,8 +25,10 @@ class Card:
     def apply_effect(self, player, opponent):
         if self.effect == "heal":
             player.health += 10  # Heal effect restores player's health
+            player.health = min(player.health, 100)  # Cap health at 100
         elif self.effect == "heal_full":
             player.health += 40
+            player.health = min(player.health, 100)  # Cap health at 100
         elif self.effect == "skip_turn":
             opponent.skip_next_turn = True  # Set opponent's next turn to be skipped
             print(f"{opponent.name} will skip their next turn!")  # Debug print

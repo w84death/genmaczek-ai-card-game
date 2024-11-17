@@ -1,8 +1,9 @@
-import random  # Add at top with other imports
+import random
 from PyQt5.QtWidgets import (QVBoxLayout, QLabel, QPushButton, QWidget, 
                            QHBoxLayout, QGroupBox, QFrame, QProgressBar, QStackedLayout)
 from PyQt5.QtGui import QPalette, QBrush, QPixmap, QPainter, QColor, QPainterPath
 from PyQt5.QtCore import Qt, QSize, QRectF
+from PyQt5.QtMultimedia import QSound
 
 class GameUI:
     def __init__(self, main_window, player, ai_player):
@@ -131,6 +132,7 @@ class GameUI:
         if layout_name == 'intro':
             self.stacked_layout.setCurrentIndex(0)
         elif layout_name == 'game':
+            QSound.play("sfx/game_start.wav")
             self.stacked_layout.setCurrentIndex(1)
         elif layout_name == 'game_over':
             self.stacked_layout.setCurrentIndex(2)

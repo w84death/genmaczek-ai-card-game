@@ -1,7 +1,12 @@
 # main.py
 import sys
 import random
+import asyncio
+import qasync
+from functools import partial
+from qasync import QEventLoop
 from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QLabel, QVBoxLayout, QWidget, QMessageBox
+from PyQt5.QtCore import QTimer
 from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import Qt
 from PyQt5.QtMultimedia import QSound
@@ -83,8 +88,18 @@ class MainWindow(QMainWindow):
         # Update the UI
         self.ui.update_hand()
         self.ui.show_cards(True)
+        
+        # Modify the mousePressEvent connection to use the new method
+        for card in self.player.hand:
+            card_widget = self.create_card_widget(card)
+            card_widget.mousePressEvent = lambda e, c=card: self.play_card(c)
 
     def play_card(self, card):
+        # Convert synchronous call to asynchronous
+        asyncio.create_task(self._play_card_async(card))
+
+    async def _play_card_async(self, card):
+        """Async implementation of play_card"""
         # Check if player is stunned at the start of their turn
         if self.player.skip_next_turn:
             self.player.skip_next_turn = False  # Reset stun
@@ -93,8 +108,8 @@ class MainWindow(QMainWindow):
             
             # AI gets to play twice when player is stunned
             self.ui.show_waiting_message()
-            self.ai_turn()  # First AI turn
-            self.ai_turn()  # Second AI turn
+            await self.ai_turn()  # First AI turn
+            await self.ai_turn()  # Second AI turn
             self.update_stats()
             
             # Start new turn
@@ -107,7 +122,7 @@ class MainWindow(QMainWindow):
         # Handle skip card
         if card.effect == "skip":
             self.ui.update_last_played(player_card=card)
-            self.ai_turn()
+            await self.ai_turn()
             self.end_turn()
             return
 
@@ -124,7 +139,7 @@ class MainWindow(QMainWindow):
 
         # Generate narrative for player's action
         player_action = f"Player used {card.name} against AI."
-        narrative = self.narrative_ai.generate_narrative(player_action)
+        narrative = await self.narrative_ai.generate_narrative(player_action)
         self.ui.update_narrative(narrative)
 
         # Check for win condition
@@ -135,7 +150,7 @@ class MainWindow(QMainWindow):
 
         # AI's turn
         if not self.ai_player.skip_next_turn:
-            self.ai_turn()
+            await self.ai_turn()
         else:
             self.ai_player.skip_next_turn = False
 
@@ -156,7 +171,7 @@ class MainWindow(QMainWindow):
             self.ui.status_label.setText("You are stunned for next turn!")
             QApplication.processEvents()
 
-    def ai_turn(self):
+    async def ai_turn(self):
         # Check if AI is stunned
         if self.ai_player.skip_next_turn:
             self.ai_player.skip_next_turn = False
@@ -178,7 +193,7 @@ class MainWindow(QMainWindow):
         QApplication.processEvents()  # Force UI update
 
         # Make AI move
-        ai_card = self.ai_player.decide_move(game_state)
+        ai_card = await self.ai_player.decide_move(game_state)
 
         if ai_card:
             # AI plays a card
@@ -189,7 +204,7 @@ class MainWindow(QMainWindow):
 
             # Generate narrative for AI's action
             ai_action = f"AI used {ai_card.name} against Player."
-            narrative = self.narrative_ai.generate_narrative(ai_action)
+            narrative = await self.narrative_ai.generate_narrative(ai_action)
             self.ui.update_narrative(narrative)
         else:
             # Handle case where AI didn't return a valid move
@@ -233,7 +248,23 @@ class MainWindow(QMainWindow):
         self.raise_()
         self.activateWindow()
 
-app = QApplication(sys.argv)
-window = MainWindow()
-window.show()
-app.exec_()
+def main():
+    app = QApplication(sys.argv)
+    try:
+        loop = qasync.QEventLoop(app)
+        asyncio.set_event_loop(loop)
+        
+        window = MainWindow()
+        window.show()
+        
+        with loop:
+            loop.run_forever()
+    except:
+        # Clean up
+        if hasattr(window, 'ai_player'):
+            loop.run_until_complete(window.ai_player.cleanup())
+        if hasattr(window, 'narrative_ai'):
+            loop.run_until_complete(window.narrative_ai.cleanup())
+
+if __name__ == "__main__":
+    main()

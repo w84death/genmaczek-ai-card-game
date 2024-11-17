@@ -1,71 +1,75 @@
-import requests
-from player import Player  # Import the Player class
-import json  # Add this import
-import random  # Add this import if not already present
+import aiohttp
+import asyncio
+from player import Player
+import json
+import random
 
 class AIPlayer(Player):
     def __init__(self, name, server_url):
         super().__init__(name)
         self.server_url = server_url
+        self.session = None
 
-    def decide_move(self, game_state, max_retries=3):
-        # Draw new cards if hand is empty
+    async def get_session(self):
+        if self.session is None:
+            self.session = aiohttp.ClientSession()
+        return self.session
+
+    async def decide_move(self, game_state, max_retries=3):
         if not self.hand:
             self.draw_cards(game_state['deck'], num=3)
         
-        # Keep track of retries
         retries = 0
-        last_error = None  # Track the last error
+        last_error = None
         
         while retries < max_retries:
             game_state['ai_resources'] = self.resources
-            message = self.create_prompt(game_state, last_error)  # Pass the error to prompt
+            message = self.create_prompt(game_state, last_error)
 
-            # Add random seed for each attempt
             payload = {
                 "model": "granite3-dense",
                 "prompt": message,
                 "format": "json",
                 "stream": False,
             }
-            response = requests.post(
-                f"{self.server_url}/api/generate",
-                json=payload
-            )
 
-            if response.status_code == 200:
-                data = response.json()
-                content = data.get('response', '')
-                try:
-                    ai_response = json.loads(content)
-                    if ai_response and isinstance(ai_response, dict):
-                        card_name = ai_response.get("card_name", "")
-                        if card_name:  # If we got a valid card name
-                            # Check if AI wants to skip turn
-                            if card_name.lower() == "skip_turn":
-                                print(f"AI skipping turn to gain 1 resource (Current: {self.resources})")
-                                return self.skip_card
-                            
-                            # Try to play a card
-                            for card in self.hand:
-                                if card.name.lower() == card_name.lower():
-                                    if self.can_play_card(card):
-                                        print(f"AI playing {card.name} (Cost: {card.cost}, Resources: {self.resources})")
-                                        return card
+            session = await self.get_session()
+            try:
+                async with session.post(f"{self.server_url}/api/generate", json=payload) as response:
+                    if response.status == 200:
+                        data = await response.json()
+                        content = data.get('response', '')
+                        try:
+                            ai_response = json.loads(content)
+                            if ai_response and isinstance(ai_response, dict):
+                                card_name = ai_response.get("card_name", "")
+                                if card_name:
+                                    if card_name.lower() == "skip_turn":
+                                        print(f"AI skipping turn to gain 1 resource (Current: {self.resources})")
+                                        return self.skip_card
+                                    
+                                    for card in self.hand:
+                                        if card.name.lower() == card_name.lower():
+                                            if self.can_play_card(card):
+                                                print(f"AI playing {card.name}")
+                                                return card
+                                            else:
+                                                last_error = f"Insufficient resources for {card.name}"
+                                                break
                                     else:
-                                        last_error = f"Insufficient resources to play {card.name} (Cost: {card.cost}, Available: {self.resources}). Consider skipping turn to gain resources."
-                                        break
-                            else:
-                                last_error = f"Card {card_name} not found in hand"
-                except json.JSONDecodeError:
-                    last_error = "Failed to parse AI response as JSON"
+                                        last_error = f"Card {card_name} not found in hand"
+                        except json.JSONDecodeError:
+                            last_error = "Failed to parse AI response as JSON"
+
+            except Exception as e:
+                last_error = f"Network error: {str(e)}"
 
             retries += 1
-            if (not last_error):
-                last_error = "Respond in JSON format {{\"card_name\": \"[Card Name]\"}}."
-            print(f"Retrying AI decision ({retries}/{max_retries}). Reason: {last_error}")
-        
-        print("AI failed to make a valid decision after all retries, skipping turn")
+            if not last_error:
+                last_error = "Response format error"
+            await asyncio.sleep(0.5)  # Add small delay between retries
+            
+        print("AI failed to make a valid decision")
         return self.skip_card
 
     def end_turn(self, deck):
@@ -95,7 +99,7 @@ class AIPlayer(Player):
         # print(prompt)
         return prompt
 
-    def generate_narrative(self, action):
+    async def generate_narrative(self, action):
         prompt = f"Provide a narrative commentary for the following action:\n{action}\n. Respond in JSON with narrative_commentary."
         payload = {
             "model": "granite3-dense",
@@ -103,23 +107,25 @@ class AIPlayer(Player):
             "format": "json",
             "stream": False,
         }
-        response = requests.post(
-            f"{self.server_url}/api/generate",
-            json=payload
-        )
-        if response.status_code == 200:
-            data = response.json()
-            content = data.get('response', '')
-            try:
-                narrative_response = json.loads(content)
-                commentary = narrative_response.get('narrative_commentary', '')
-                return commentary.strip()
-            except json.JSONDecodeError:
-                return "The battle continues..."
-        else:
+        
+        session = await self.get_session()
+        try:
+            async with session.post(f"{self.server_url}/api/generate", json=payload) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    content = data.get('response', '')
+                    try:
+                        narrative_response = json.loads(content)
+                        commentary = narrative_response.get('narrative_commentary', '')
+                        return commentary.strip()
+                    except json.JSONDecodeError:
+                        return "The battle continues..."
+        except Exception:
             return "The battle continues..."
+        
+        return "The battle continues..."
 
-    def generate_introduction(self):
+    async def generate_introduction(self):
         prompt = "Provide a motivational, welcoming message for the player general at the start of the game."
         payload = {
             "model": "granite3-dense",
@@ -127,18 +133,25 @@ class AIPlayer(Player):
             "format": "json",
             "stream": False,
         }
-        response = requests.post(
-            f"{self.server_url}/api/generate",
-            json=payload
-        )
-        if response.status_code == 200:
-            data = response.json()
-            content = data.get('response', '')
-            try:
-                intro_response = json.loads(content)
-                message = intro_response.get('narrative_commentary', '')
-                return message.strip()
-            except json.JSONDecodeError:
-                return "Welcome to the battle, General!"
-        else:
+        
+        session = await self.get_session()
+        try:
+            async with session.post(f"{self.server_url}/api/generate", json=payload) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    content = data.get('response', '')
+                    try:
+                        intro_response = json.loads(content)
+                        message = intro_response.get('narrative_commentary', '')
+                        return message.strip()
+                    except json.JSONDecodeError:
+                        return "Welcome to the battle, General!"
+        except Exception:
             return "Welcome to the battle, General!"
+        
+        return "Welcome to the battle, General!"
+
+    async def cleanup(self):
+        if self.session:
+            await self.session.close()
+            self.session = None

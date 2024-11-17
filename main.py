@@ -26,13 +26,14 @@ class MainWindow(QMainWindow):
         self.ai_player = AIPlayer("AI Opponent", "http://localhost:11434")  # Ollama server
         self.deck = self.create_deck()
         self.game = Game(self.player, self.ai_player, self.deck)
+        self.narrative_ai = AIPlayer("NarrativeAI", "http://localhost:11434")
 
         # Players draw initial hands
         self.player.draw_cards(self.deck)
         self.ai_player.draw_cards(self.deck)
 
         # Set up UI elements
-        self.ui = GameUI(self, self.player, self.ai_player)
+        self.ui = GameUI(self, self.player, self.ai_player, self.narrative_ai)
 
     def init_ui(self):
         layout = QVBoxLayout()
@@ -121,6 +122,11 @@ class MainWindow(QMainWindow):
         self.ui.update_last_played(player_card=card)
         self.update_stats()
 
+        # Generate narrative for player's action
+        player_action = f"Player used {card.name} against AI."
+        narrative = self.narrative_ai.generate_narrative(player_action)
+        self.ui.update_narrative(narrative)
+
         # Check for win condition
         winner = self.game.check_winner()
         if winner:
@@ -180,6 +186,11 @@ class MainWindow(QMainWindow):
             self.ui.update_last_played(ai_card=ai_card)
             self.update_stats()
             self.alert_window()  # Alert the window when AI responds
+
+            # Generate narrative for AI's action
+            ai_action = f"AI used {ai_card.name} against Player."
+            narrative = self.narrative_ai.generate_narrative(ai_action)
+            self.ui.update_narrative(narrative)
         else:
             # Handle case where AI didn't return a valid move
             print("AI did not play a card.")

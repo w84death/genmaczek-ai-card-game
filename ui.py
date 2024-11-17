@@ -1,19 +1,34 @@
 import random
 from PyQt5.QtWidgets import (QVBoxLayout, QLabel, QPushButton, QWidget, 
-                           QHBoxLayout, QGroupBox, QFrame, QProgressBar, QStackedLayout)
-from PyQt5.QtGui import QPalette, QBrush, QPixmap, QPainter, QColor, QPainterPath
+                           QHBoxLayout, QGroupBox, QFrame, QProgressBar, QStackedLayout, QTextEdit)
+from PyQt5.QtGui import QPalette, QBrush, QPixmap, QPainter, QColor, QPainterPath, QTextOption
 from PyQt5.QtCore import Qt, QSize, QRectF
 from PyQt5.QtMultimedia import QSound
 
 class GameUI:
-    def __init__(self, main_window, player, ai_player):
+    def __init__(self, main_window, player, ai_player, narrative_ai):
         self.main_window = main_window
         self.player = player
         self.ai_player = ai_player
-        
-        # Add at start of __init__ after setting self variables
+        self.narrative_ai = narrative_ai  # Store this if you need it for narratives
+
+        # Initialize avatars
         self.player_avatar = f"avatars/player_{random.randint(0, 4)}.jpg"
         self.ai_avatar = f"avatars/ai_{random.randint(0, 4)}.jpg"
+
+        # Replace QLabel with QTextEdit for narrative
+        self.narrative_text = QTextEdit()
+        self.narrative_text.setReadOnly(True)
+        self.narrative_text.setStyleSheet("""
+            QTextEdit {
+                color: white;
+                font-size: 16px;
+                background-color: rgba(0, 0, 0, 150);
+                padding: 10px;
+                border-radius: 10px;
+            }
+        """)
+        self.narrative_text.setWordWrapMode(QTextOption.WordWrap)
 
         # Create main container with padding
         main_container = QWidget()
@@ -43,6 +58,9 @@ class GameUI:
         # Start with intro screen
         self.show_layout('intro')
 
+        # Connect the start button after it's defined
+        self.start_btn.clicked.connect(self.start_game)
+
         # Set layout
         self.main_window.setCentralWidget(main_container)
         
@@ -67,9 +85,22 @@ class GameUI:
         title.setAlignment(Qt.AlignCenter)
         layout.addWidget(title)
 
+        # Story introduction
+        story_label = QLabel("Welcome, General! Your strategic prowess will be tested in this epic battle. Lead your forces to victory and outsmart your opponent!")
+        story_label.setStyleSheet("""
+            QLabel {
+                color: white;
+                font-size: 18px;
+                padding: 10px;
+            }
+        """)
+        story_label.setAlignment(Qt.AlignCenter)
+        story_label.setWordWrap(True)
+        layout.addWidget(story_label)
+
         # Start button
-        start_btn = QPushButton("Start Game")
-        start_btn.setStyleSheet("""
+        self.start_btn = QPushButton("Start Game")
+        self.start_btn.setStyleSheet("""
             QPushButton {
                 background-color: rgba(0, 200, 0, 150);
                 color: white;
@@ -83,9 +114,9 @@ class GameUI:
                 background-color: rgba(0, 255, 0, 200);
             }
         """)
-        start_btn.setFixedWidth(200)
-        start_btn.clicked.connect(lambda: self.show_layout('game'))
-        layout.addWidget(start_btn, alignment=Qt.AlignCenter)
+        self.start_btn.setFixedWidth(200)
+        self.start_btn.clicked.connect(lambda: self.show_layout('game'))
+        layout.addWidget(self.start_btn, alignment=Qt.AlignCenter)
         
         intro_widget.setLayout(layout)
         return intro_widget
@@ -420,6 +451,8 @@ class GameUI:
         # Add game area to main layout with stretch
         self.game_layout.addWidget(game_area, stretch=1)
         
+        self.game_layout.addWidget(self.narrative_text)
+
         # Add footer (will stay at bottom)
         footer = QLabel("Produced by Krzysztof Krystian Jankowski, © 2024. Powered by IBM Granite 3.0")
         footer.setStyleSheet("""
@@ -621,3 +654,12 @@ class GameUI:
     def update_defense_display(self):
         self.player_defense_label.setText(f"🛡️ {self.player.defense}")
         self.ai_defense_label.setText(f"🛡️ {self.ai_player.defense}")
+
+    def update_narrative(self, text):
+        # Append new narrative to the text box
+        self.narrative_text.append(text)
+
+    def start_game(self):
+        self.show_layout('game')
+        # Introduction is now handled asynchronously
+        # The introduction text will appear once ready

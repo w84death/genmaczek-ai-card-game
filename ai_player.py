@@ -94,3 +94,51 @@ class AIPlayer(Player):
 
         # print(prompt)
         return prompt
+
+    def generate_narrative(self, action):
+        prompt = f"Provide a narrative commentary for the following action:\n{action}\n. Respond in JSON with narrative_commentary."
+        payload = {
+            "model": "granite3-dense",
+            "prompt": prompt,
+            "format": "json",
+            "stream": False,
+        }
+        response = requests.post(
+            f"{self.server_url}/api/generate",
+            json=payload
+        )
+        if response.status_code == 200:
+            data = response.json()
+            content = data.get('response', '')
+            try:
+                narrative_response = json.loads(content)
+                commentary = narrative_response.get('narrative_commentary', '')
+                return commentary.strip()
+            except json.JSONDecodeError:
+                return "The battle continues..."
+        else:
+            return "The battle continues..."
+
+    def generate_introduction(self):
+        prompt = "Provide a motivational, welcoming message for the player general at the start of the game."
+        payload = {
+            "model": "granite3-dense",
+            "prompt": prompt,
+            "format": "json",
+            "stream": False,
+        }
+        response = requests.post(
+            f"{self.server_url}/api/generate",
+            json=payload
+        )
+        if response.status_code == 200:
+            data = response.json()
+            content = data.get('response', '')
+            try:
+                intro_response = json.loads(content)
+                message = intro_response.get('narrative_commentary', '')
+                return message.strip()
+            except json.JSONDecodeError:
+                return "Welcome to the battle, General!"
+        else:
+            return "Welcome to the battle, General!"

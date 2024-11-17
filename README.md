@@ -1,6 +1,6 @@
 # genMaczek - AI Card Battle Game
 
-![game.png](Game screenshot)
+![Game screenshot](game.png)
 
 ## Overview
 genMaczek is a strategic war card game where players take turns to outmaneuver and defeat their opponent by making tactical decisions. The game features both a human player and an AI opponent, each with their own deck of cards. The objective is to reduce the opponent's health to zero or have the highest health when all cards are used.

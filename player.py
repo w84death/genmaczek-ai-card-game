@@ -21,29 +21,12 @@ class Player:
         self._resources = max(0, value)  # Ensure resources don't go negative
 
     def draw_cards(self, deck, num=3):
-        # Keep the skip card
-        skip_card = self.skip_card
-        # Clear current hand completely
-        self.hand.clear()
-        # Put skip card back
-        self.hand.append(skip_card)
-        
-        # Get available cards that are not skip cards
-        available_cards = [card for card in deck if card.effect != "skip"]
-        
-        # Determine how many cards we can draw
-        cards_to_draw = min(num, len(available_cards))
-        
-        if cards_to_draw > 0:
-            # Draw exactly cards_to_draw cards
-            drawn_cards = random.sample(available_cards, cards_to_draw)
-            self.hand.extend(drawn_cards)
-            
-            # Remove drawn cards from the deck
-            for card in drawn_cards:
-                deck.remove(card)
-        
-        # print(f"{self.name} drew {len(self.hand)-1} cards (plus skip card)")  # Debug print
+        """Draw cards from the deck"""
+        cards_to_draw = min(num, len(deck))
+        for _ in range(cards_to_draw):
+            if deck:  # Check if deck is not empty
+                card = deck.pop()  # Remove card from deck
+                self.hand.append(card)
 
     def can_play_card(self, card):
         return self.resources >= card.cost
@@ -76,9 +59,12 @@ class Player:
                 pass
 
     def end_turn(self, deck):
-        # Return only non-skip cards to the deck
-        cards_to_return = [card for card in self.hand if card != self.skip_card]
-        deck.extend(cards_to_return)
-        # Reset hand to only have the skip card
-        self.hand = [self.skip_card]
-        # print(f"{self.name} returned {len(cards_to_return)} cards to deck")  # Debug print
+        """Return unused cards to the deck"""
+        # Keep skip card if present
+        skip_cards = [card for card in self.hand if card.effect == "skip"]
+        # Get other cards
+        other_cards = [card for card in self.hand if card.effect != "skip"]
+        # Return other cards to deck
+        deck.extend(other_cards)
+        # Reset hand to only have skip cards
+        self.hand = skip_cards

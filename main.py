@@ -85,14 +85,10 @@ class MainWindow(QMainWindow):
         self.player.draw_cards(self.deck)
         self.ai_player.draw_cards(self.deck)
         
-        # Update the UI
+        # Update the UI and deck count
         self.ui.update_hand()
+        self.ui.update_deck_count(len(self.deck))  # Add this line
         self.ui.show_cards(True)
-        
-        # Modify the mousePressEvent connection to use the new method
-        for card in self.player.hand:
-            card_widget = self.create_card_widget(card)
-            card_widget.mousePressEvent = lambda e, c=card: self.play_card(c)
 
     def play_card(self, card):
         # Convert synchronous call to asynchronous
@@ -135,6 +131,7 @@ class MainWindow(QMainWindow):
         # Player plays a card
         self.player.play_card(card, self.ai_player)
         self.ui.update_last_played(player_card=card)
+        self.ui.update_deck_count(len(self.deck))  # Add this line
         self.update_stats()
 
         # Generate narrative for player's action
@@ -199,6 +196,7 @@ class MainWindow(QMainWindow):
             # AI plays a card
             self.ai_player.play_card(ai_card, self.player)
             self.ui.update_last_played(ai_card=ai_card)
+            self.ui.update_deck_count(len(self.deck))  # Add this line
             self.update_stats()
             self.alert_window()  # Alert the window when AI responds
 

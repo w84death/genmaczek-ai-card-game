@@ -514,9 +514,13 @@ class GameUI:
         self.resource_label.setText(f"⬣ {self.player.resources}")
         self.ai_resource_label.setText(f"⬣ {self.ai_player.resources}")
 
+    def update_deck_count(self, count):
+        """Update the deck count display"""
+        self.cards_remaining_label.setText(str(count))
+
     def update_hand(self):
         # Clear existing buttons and layout
-        self.card_buttons = []  # Reset the list completely
+        self.card_buttons = []
         
         # Clear previous layout
         while self.cards_layout.count():
@@ -526,102 +530,109 @@ class GameUI:
         
         # Add new card buttons
         for card in self.player.hand:
-            # Create container widget for the card
-            card_widget = QWidget()
-            card_widget.setFixedSize(150, 200)
-            card_widget.setStyleSheet("""
-                QWidget {
-                    background-color: rgba(0, 0, 0, 200);
-                    border-radius: 6px;
-                    padding: 0;
-                }
-                QWidget:hover {
-                    background-color: rgba(0, 0, 240, 200);
-                }
-            """)
-
-            # Create main layout for the card widget
-            card_layout = QVBoxLayout(card_widget)
-            card_layout.setContentsMargins(0, 0, 0, 0)
-            card_layout.setSpacing(0)
-
-            # Create a container for the image and cost label
-            image_container = QWidget()
-            image_container.setFixedSize(150, 150)
-            image_container.setStyleSheet("background: transparent;")
-
-            # Use a stacked layout to overlay the cost icon on the image
-            stacked_layout = QStackedLayout(image_container)
-            stacked_layout.setContentsMargins(0, 0, 0, 0)
-            stacked_layout.setStackingMode(QStackedLayout.StackAll)
-
-            # Image label
-            image_label = QLabel()
-            pixmap = QPixmap(card.image_path)
-            image_label.setPixmap(pixmap)
-            image_label.setAlignment(Qt.AlignCenter)
-
-            # Cost icon label
-            cost_label = QLabel(f"⬣ {card.cost}")
-            cost_label.setStyleSheet("""
-                QLabel {
-                    font-size: 16px;
-                    color: white;
-                    background-color: black;
-                    padding: 4px;
-                    border-radius: 3px;
-                }
-            """)
-            cost_label.setAlignment(Qt.AlignRight | Qt.AlignTop)
-            cost_label.setFixedSize(50, 30)
-
-            # Add widgets to stacked layout - reversed order
-            stacked_layout.addWidget(cost_label)  # Add cost label first
-            stacked_layout.addWidget(image_label) # Add image label second
-
-            # Add image container to card layout
-            card_layout.addWidget(image_container)
-
-            # Name label
-            name_label = QLabel(card.name)
-            name_label.setAlignment(Qt.AlignCenter)
-
-            # Name label
-            name_label = QLabel(card.name)
-            name_label.setAlignment(Qt.AlignCenter)
-            name_label.setStyleSheet("""
-                QLabel {
-                    font-weight: bold;
-                    font-size: 12px;
-                    color: white;
-                    background-color: rgba(0, 0, 0, 150);
-                    padding: 2px;
-                }
-            """)
-
-            # Description label
-            description_label = QLabel(card.description)
-            description_label.setAlignment(Qt.AlignCenter)
-            description_label.setWordWrap(True)
-            description_label.setStyleSheet("""
-                QLabel {
-                    font-size: 10px;
-                    color: white;
-                    background-color: rgba(0, 0, 0, 150);
-                    padding: 4px;
-                }
-            """)
-            description_label.setFixedHeight(40)
-
-            # Add labels to card layout
-            card_layout.addWidget(name_label)
-            card_layout.addWidget(description_label)
-
-            # Make the whole card clickable
-            card_widget.mousePressEvent = lambda e, c=card: self.main_window.play_card(c)
-
+            card_widget = self.create_card_widget(card)
             self.card_buttons.append(card_widget)
             self.cards_layout.addWidget(card_widget)
+
+        # Update deck count
+        self.update_deck_count(len(self.main_window.deck))  # Add this line
+
+    def create_card_widget(self, card):
+        # Create container widget for the card
+        card_widget = QWidget()
+        card_widget.setFixedSize(150, 200)
+        card_widget.setStyleSheet("""
+            QWidget {
+                background-color: rgba(0, 0, 0, 200);
+                border-radius: 6px;
+                padding: 0;
+            }
+            QWidget:hover {
+                background-color: rgba(0, 0, 240, 200);
+            }
+        """)
+
+        # Create main layout for the card widget
+        card_layout = QVBoxLayout(card_widget)
+        card_layout.setContentsMargins(0, 0, 0, 0)
+        card_layout.setSpacing(0)
+
+        # Create a container for the image and cost label
+        image_container = QWidget()
+        image_container.setFixedSize(150, 150)
+        image_container.setStyleSheet("background: transparent;")
+
+        # Use a stacked layout to overlay the cost icon on the image
+        stacked_layout = QStackedLayout(image_container)
+        stacked_layout.setContentsMargins(0, 0, 0, 0)
+        stacked_layout.setStackingMode(QStackedLayout.StackAll)
+
+        # Image label
+        image_label = QLabel()
+        pixmap = QPixmap(card.image_path)
+        image_label.setPixmap(pixmap)
+        image_label.setAlignment(Qt.AlignCenter)
+
+        # Cost icon label
+        cost_label = QLabel(f"⬣ {card.cost}")
+        cost_label.setStyleSheet("""
+            QLabel {
+                font-size: 16px;
+                color: white;
+                background-color: black;
+                padding: 4px;
+                border-radius: 3px;
+            }
+        """)
+        cost_label.setAlignment(Qt.AlignRight | Qt.AlignTop)
+        cost_label.setFixedSize(50, 30)
+
+        # Add widgets to stacked layout - reversed order
+        stacked_layout.addWidget(cost_label)  # Add cost label first
+        stacked_layout.addWidget(image_label) # Add image label second
+
+        # Add image container to card layout
+        card_layout.addWidget(image_container)
+
+        # Name label
+        name_label = QLabel(card.name)
+        name_label.setAlignment(Qt.AlignCenter)
+
+        # Name label
+        name_label = QLabel(card.name)
+        name_label.setAlignment(Qt.AlignCenter)
+        name_label.setStyleSheet("""
+            QLabel {
+                font-weight: bold;
+                font-size: 12px;
+                color: white;
+                background-color: rgba(0, 0, 0, 150);
+                padding: 2px;
+            }
+        """)
+
+        # Description label
+        description_label = QLabel(card.description)
+        description_label.setAlignment(Qt.AlignCenter)
+        description_label.setWordWrap(True)
+        description_label.setStyleSheet("""
+            QLabel {
+                font-size: 10px;
+                color: white;
+                background-color: rgba(0, 0, 0, 150);
+                padding: 4px;
+            }
+        """)
+        description_label.setFixedHeight(40)
+
+        # Add labels to card layout
+        card_layout.addWidget(name_label)
+        card_layout.addWidget(description_label)
+
+        # Make the whole card clickable
+        card_widget.mousePressEvent = lambda e, c=card: self.main_window.play_card(c)
+
+        return card_widget
 
     def update_stats(self):
         # Update health bars

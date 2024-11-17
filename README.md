@@ -5,6 +5,12 @@
 ## Overview
 genMaczek is a strategic war card game where players take turns to outmaneuver and defeat their opponent by making tactical decisions. The game features both a human player and an AI opponent, each with their own deck of cards. The objective is to reduce the opponent's health to zero or have the highest health when all cards are used.
 
+## Why?
+I undertook this experiment to learn about integrating Ollama and generative AI (genAI) with a game to create a valid AI opponent. The goal was to explore how AI can be used to make strategic decisions in a game environment.
+
+## Results
+The results were mixed. While the AI was able to make some valid moves, it was also slow and prone to hallucinations, making decisions that did not always align with the game rules or context.
+
 ## Features
 - **Turn-based gameplay**: Players take turns to play cards from their hand.
 - **AI opponent**: The game includes an AI opponent that makes strategic decisions based on the game state.
